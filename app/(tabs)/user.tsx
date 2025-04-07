@@ -1,6 +1,18 @@
-import { Button, StyleSheet, View } from "react-native";
+import AppButton from "@/components/ui/AppButton";
+import { StyleSheet, View } from "react-native";
+import { useRouter } from 'expo-router';
 
-export default function TabTwoScreen() {
+export default function LoginScreen() {
+    const router = useRouter();
+
+    const handleClickLogin = () => {
+        router.push("/login");
+    }
+
+    const handleClickRegister = () => {
+        router.push("/register");
+    }
+
     return (
         <View>
             <View style={styles.header}>
@@ -10,10 +22,17 @@ export default function TabTwoScreen() {
                         justifyContent: "flex-end",
                         alignItems: "center",
                         flexDirection: "row",
+                        gap: 12,
+                        padding: 12,
                     }}
                 >
-                    <Button title="Đăng nhập" color={'#1e293b'}  />
-                    <Button title="Đăng ký" />
+                    <AppButton variant="primary" title="Đăng nhập" onPress={handleClickLogin} />
+                    <AppButton
+                        color="#FFF"
+                        title="Đăng ký"
+                        onPress={handleClickRegister}
+                        backgroundColor="#FFF"
+                    />
                 </View>
             </View>
         </View>
