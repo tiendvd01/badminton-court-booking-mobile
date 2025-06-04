@@ -12,7 +12,7 @@ function RegisterScreen() {
         router.push("/login");
     }
     const handleClickBack = () => {
-      router.push("/(tabs)/user");
+      router.back();
     }
     return (
         <View>
