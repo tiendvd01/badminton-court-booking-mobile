@@ -69,6 +69,7 @@ function CourtFilterBar() {
 
     const handleProvinceChange = (value: string) => {
         setProvince(value);
+        setDistrict(''); // Reset district when province changes
     };
 
     return (

@@ -22,7 +22,7 @@ function DashboardScreen() {
         router.push('/register');
     };
     return (
-        <ScrollView>
+        <ScrollView style={{ height: '100%' }} contentContainerStyle={{ backgroundColor: "#FFF" }}>
             <View style={styles.container}>
                 <View style={styles.headerWrapper}>
                     <View style={styles.headerContent}>
