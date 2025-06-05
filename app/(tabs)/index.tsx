@@ -22,57 +22,55 @@ function DashboardScreen() {
         router.push('/register');
     };
     return (
-        <ScrollView style={{ height: '100%' }} contentContainerStyle={{ backgroundColor: "#FFF" }}>
-            <View style={styles.container}>
-                <View style={styles.headerWrapper}>
-                    <View style={styles.headerContent}>
-                        <Image
-                            style={styles.avatar}
-                            source={user?.avatar_url || require('../../assets/images/shuttlecock_new_bg.png')}
-                        />
-                        <View style={styles.infoWrapper}>
-                            <Text style={styles.date}>{formattedDate}</Text>
-                            {user ? (
-                                <Text style={styles.name}>{user.name}</Text>
-                            ) : (
-                                <View
-                                    style={{
-                                        display: 'flex',
-                                        flexDirection: 'row',
-                                        gap: 8,
-                                    }}
-                                >
-                                    <AppButton variant="primary" title="Đăng nhập" onPress={handleClickLogin} />
-                                    <AppButton
-                                        color="#FFF"
-                                        title="Đăng ký"
-                                        onPress={handleClickRegister}
-                                        backgroundColor="#FFF"
-                                    />
-                                </View>
-                            )}
-                        </View>
-                    </View>
-                    <View style={styles.searchBoxWrapper}>
-                        <View
-                            style={{
-                                flex: 1,
-                                flexDirection: 'row',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                gap: 8,
-                            }}
-                        >
-                            <View style={{ flex: 1 }}>
-                                <SearchBox />
+        <ScrollView style={{ height: '100%' }} contentContainerStyle={{ backgroundColor: '#FFF' }}>
+            <View style={styles.headerWrapper}>
+                <View style={styles.headerContent}>
+                    <Image
+                        style={styles.avatar}
+                        source={user?.avatar_url || require('../../assets/images/shuttlecock_new_bg.png')}
+                    />
+                    <View style={styles.infoWrapper}>
+                        <Text style={styles.date}>{formattedDate}</Text>
+                        {user ? (
+                            <Text style={styles.name}>{user.name}</Text>
+                        ) : (
+                            <View
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    gap: 8,
+                                }}
+                            >
+                                <AppButton variant="primary" title="Đăng nhập" onPress={handleClickLogin} />
+                                <AppButton
+                                    color="#FFF"
+                                    title="Đăng ký"
+                                    onPress={handleClickRegister}
+                                    backgroundColor="#FFF"
+                                />
                             </View>
-                            <FavoriteButton />
-                        </View>
+                        )}
                     </View>
                 </View>
-                <View style={styles.courtListWrapper}>
-                    <CourtList />
+                <View style={styles.searchBoxWrapper}>
+                    <View
+                        style={{
+                            flex: 1,
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            gap: 8,
+                        }}
+                    >
+                        <View style={{ flex: 1 }}>
+                            <SearchBox />
+                        </View>
+                        <FavoriteButton />
+                    </View>
                 </View>
+            </View>
+            <View style={styles.courtListWrapper}>
+                <CourtList />
             </View>
         </ScrollView>
     );
@@ -127,6 +125,8 @@ const styles = StyleSheet.create({
         padding: 16,
         paddingTop: 24,
         backgroundColor: '#FFF',
+        flex: 1,
+        minHeight: '100%',
     },
 });
 

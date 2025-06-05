@@ -1,0 +1,127 @@
+import React from 'react';
+import { ImageBackground, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ThemedText } from '../ThemedText';
+import { Image } from 'expo-image';
+import AppButton from '../ui/AppButton';
+import { IconSymbol } from '../ui/IconSymbol';
+import { ILocation } from '@/types/common';
+
+type Props = {
+    location: ILocation;
+};
+
+function LocationItem({ location }: Props) {
+    return (
+        <ImageBackground
+            imageStyle={styles.imageContainer}
+            source={
+                location.images.length > 0
+                    ? { uri: location.images?.[0].image_url }
+                    : require('../../assets/images/defaultImage.jpg')
+            }
+        >
+            <View style={styles.iconButtonGroup}>
+                <TouchableOpacity style={styles.iconButton}>
+                    <IconSymbol name="heart" color="#EF9651" size={16} />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.iconButton}>
+                    <IconSymbol name="map" color="#EF9651" size={16} />
+                </TouchableOpacity>
+            </View>
+            <View style={styles.contentContainer}>
+                <View style={styles.leftContentPart}>
+                    <Image
+                        source={
+                            location.logo
+                                ? { uri: location.logo }
+                                : require('../../assets/images/shuttlecock_new_bg.png')
+                        }
+                        style={styles.locationLogo}
+                    />
+                </View>
+                <View style={styles.centerContentPart}>
+                    <ThemedText style={styles.locationName}>{location.name}</ThemedText>
+                    <ThemedText style={styles.locationAddress}>{location.address}</ThemedText>
+                    <ThemedText style={styles.locationInfo}>{location.owner.phone || 'Unknown'}</ThemedText>
+                </View>
+                <View style={styles.rightContentPart}>
+                    <AppButton backgroundColor="#EF9651" variant="primary" title="Đặt lịch" onPress={() => {}} />
+                </View>
+            </View>
+        </ImageBackground>
+    );
+}
+
+const styles = StyleSheet.create({
+    imageContainer: {
+        height: 200,
+        borderRadius: 8,
+        boxShadow: '0px 4px 4px 0px rgba(0, 0, 0, 0.25)',
+        overflow: 'hidden',
+        position: 'relative',
+    },
+    iconButtonGroup: {
+        top: 10,
+        right: 10,
+        position: 'absolute',
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 10,
+    },
+    iconButton: {
+        borderRadius: 100,
+        backgroundColor: '#FFF',
+        alignItems: 'center',
+        justifyContent: 'center',
+        display: 'flex',
+        padding: 4,
+    },
+    contentContainer: {
+        padding: 10,
+        borderRadius: 8,
+        backgroundColor: '#FFFFFF',
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 12,
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+    },
+    locationLogo: {
+        width: 48,
+        height: 48,
+        borderRadius: 100,
+    },
+    leftContentPart: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    centerContentPart: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 4,
+        flex: 1,
+    },
+    rightContentPart: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    locationName: {
+        fontSize: 12,
+        fontWeight: 'bold',
+    },
+    locationAddress: {
+        fontSize: 10,
+        fontWeight: 'normal',
+        color: '#94A3B8',
+    },
+    locationInfo: {
+        fontSize: 10,
+        fontWeight: 'normal',
+    },
+});
+
+export default LocationItem;
