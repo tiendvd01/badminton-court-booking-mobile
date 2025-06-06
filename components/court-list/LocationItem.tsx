@@ -5,12 +5,27 @@ import { Image } from 'expo-image';
 import AppButton from '../ui/AppButton';
 import { IconSymbol } from '../ui/IconSymbol';
 import { ILocation } from '@/types/common';
+import { usePriceTablesByLocationQuery } from '@/repository/courtRepository';
+import { toMinutes } from '@/utils/helper';
 
 type Props = {
     location: ILocation;
 };
 
 function LocationItem({ location }: Props) {
+    const { data: priceTables } = usePriceTablesByLocationQuery({ locationId: location.id });
+    const earliestStartTime = priceTables?.data?.data
+        ?.flatMap((priceTable) => priceTable.prices)
+        .reduce((earliest, current) => {
+            return toMinutes(current.start_time) < toMinutes(earliest) ? current.start_time : earliest;
+        }, '24:00');
+    const latestEndTime = priceTables?.data?.data
+        ?.flatMap((priceTable) => priceTable.prices)
+        .reduce((latest, current) => {
+            return toMinutes(current.end_time) > toMinutes(latest) ? current.end_time : latest;
+        }, '00:00');
+    const timeRange = `${earliestStartTime} - ${latestEndTime}`;
+    
     return (
         <ImageBackground
             imageStyle={styles.imageContainer}
@@ -42,7 +57,7 @@ function LocationItem({ location }: Props) {
                 <View style={styles.centerContentPart}>
                     <ThemedText style={styles.locationName}>{location.name}</ThemedText>
                     <ThemedText style={styles.locationAddress}>{location.address}</ThemedText>
-                    <ThemedText style={styles.locationInfo}>{location.owner.phone || 'Unknown'}</ThemedText>
+                    <ThemedText style={styles.locationInfo}>{timeRange}  {location.owner.phone || 'Unknown'}</ThemedText>
                 </View>
                 <View style={styles.rightContentPart}>
                     <AppButton backgroundColor="#EF9651" variant="primary" title="Đặt lịch" onPress={() => {}} />
@@ -57,7 +72,6 @@ const styles = StyleSheet.create({
         height: 200,
         borderRadius: 8,
         boxShadow: '0px 4px 4px 0px rgba(0, 0, 0, 0.25)',
-        overflow: 'hidden',
         position: 'relative',
     },
     iconButtonGroup: {

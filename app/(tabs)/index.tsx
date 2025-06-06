@@ -7,8 +7,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, Text } from 'react-native';
-import { View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 function DashboardScreen() {
     const router = useRouter();
@@ -22,7 +21,7 @@ function DashboardScreen() {
         router.push('/register');
     };
     return (
-        <ScrollView style={{ height: '100%' }} contentContainerStyle={{ backgroundColor: '#FFF' }}>
+        <View style={{ height: '100%', backgroundColor: "#FFF" }} > 
             <View style={styles.headerWrapper}>
                 <View style={styles.headerContent}>
                     <Image
@@ -69,10 +68,10 @@ function DashboardScreen() {
                     </View>
                 </View>
             </View>
-            <View style={styles.courtListWrapper}>
+            <ScrollView style={styles.courtListWrapper}>
                 <CourtList />
-            </View>
-        </ScrollView>
+            </ScrollView>
+        </View>
     );
 }
 
@@ -126,7 +125,7 @@ const styles = StyleSheet.create({
         paddingTop: 24,
         backgroundColor: '#FFF',
         flex: 1,
-        minHeight: '100%',
+        minHeight: 600,
     },
 });
 

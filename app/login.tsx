@@ -74,7 +74,6 @@ function LoginScreen() {
                       fontSize: 14
                     }}
                 />
-                
             </View>
         </View>
     );

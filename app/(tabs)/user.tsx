@@ -1,5 +1,5 @@
 import AppButton from "@/components/ui/AppButton";
-import { StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { useRouter } from 'expo-router';
 
 export default function LoginScreen() {
@@ -14,7 +14,7 @@ export default function LoginScreen() {
     }
 
     return (
-        <View>
+        <ScrollView style={{ height: '100%' }} contentContainerStyle={{ backgroundColor: '#FFFFFF' }}>
             <View style={styles.header}>
                 <View
                     style={{
@@ -35,7 +35,7 @@ export default function LoginScreen() {
                     />
                 </View>
             </View>
-        </View>
+        </ScrollView>
     );
 }
 
