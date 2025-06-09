@@ -8,6 +8,7 @@ import { ILocation } from '@/types/common';
 import { usePriceTablesByLocationQuery } from '@/repository/courtRepository';
 import { toMinutes } from '@/utils/helper';
 import LocationDetailInfo, { BottomSheetInputHandle } from './LocationDetailInfo';
+import { useRouter } from 'expo-router';
 
 type Props = {
     location: ILocation;
@@ -15,6 +16,7 @@ type Props = {
 
 function LocationItem({ location }: Props) {
     const { data: priceTables } = usePriceTablesByLocationQuery({ locationId: location.id });
+    const router = useRouter();
     const bottomSheetRef = useRef<BottomSheetInputHandle>(null);
     const earliestStartTime = priceTables?.data?.data
         ?.flatMap((priceTable) => priceTable.prices)
@@ -67,13 +69,25 @@ function LocationItem({ location }: Props) {
                                 backgroundColor="#EF9651"
                                 variant="primary"
                                 title="Đặt lịch"
-                                onPress={() => {}}
+                                onPress={() => {
+                                    router.push({
+                                        pathname: `/booking/[locationId]`,
+                                        params: {
+                                            locationId: location.id.toString(),
+                                        },
+                                    });
+                                }}
                             />
                         </View>
                     </View>
                 </ImageBackground>
             </TouchableOpacity>
-            <LocationDetailInfo priceTables={priceTables?.data?.data} ref={bottomSheetRef} location={location} timeRange={timeRange} />
+            <LocationDetailInfo
+                priceTables={priceTables?.data?.data}
+                ref={bottomSheetRef}
+                location={location}
+                timeRange={timeRange}
+            />
         </>
     );
 }

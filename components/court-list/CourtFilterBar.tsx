@@ -26,7 +26,6 @@ function CourtFilterBar({ onChange }: CourtFilterBarProps) {
     // State for selected values
     const [province, setProvince] = useState('');
     const [district, setDistrict] = useState('');
-    const [dateRange, setDateRange] = useState('3days');
 
     // Sample options
     const provinceOptions: SelectOption[] =
@@ -68,10 +67,9 @@ function CourtFilterBar({ onChange }: CourtFilterBarProps) {
     };
 
     // Handle filter changes
-    const handleFilterChange = useCallback((updates: { province?: string; district?: string; dateRange?: string }) => {
+    const handleFilterChange = useCallback((updates: { province?: string; district?: string }) => {
         if (updates.province !== undefined) setProvince(updates.province);
         if (updates.district !== undefined) setDistrict(updates.district);
-        if (updates.dateRange !== undefined) setDateRange(updates.dateRange);
     }, []);
 
     const handleProvinceChange = (value: string) => {
@@ -86,7 +84,6 @@ function CourtFilterBar({ onChange }: CourtFilterBarProps) {
     const handleReset = () => {
         setProvince('');
         setDistrict('');
-        setDateRange('3days');
         if (onChange) {
             onChange({ province: '', district: '' });
         }

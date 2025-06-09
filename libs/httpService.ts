@@ -37,9 +37,6 @@ httpService.interceptors.response.use(
       
       // Log the user out
       logout();
-      
-      // You can also show a notification to the user
-      console.log('Your session has expired. Please sign in again.');
     }
     
     // Return the error for further handling

@@ -12,9 +12,6 @@ interface PriceTableProps {
 const PriceTable: React.FC<PriceTableProps> = ({ priceData }) => {
     const { width } = useWindowDimensions();
 
-    // Debug log
-    console.log('PriceTable - priceData:', JSON.stringify(priceData, null, 2));
-
     // Format price to VND with thousand separators
     const formatPrice = (price: number) => {
         return new Intl.NumberFormat('vi-VN').format(price) + ' đ';
@@ -34,7 +31,6 @@ const PriceTable: React.FC<PriceTableProps> = ({ priceData }) => {
             getTimeRange(price.start_time, price.end_time),
             formatPrice(price.price),
         ]);
-        console.log('Processed table data:', data);
         return data;
     }, [priceData]);
 

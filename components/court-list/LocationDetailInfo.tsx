@@ -5,6 +5,8 @@ import {
     BottomSheetModal,
     BottomSheetScrollView,
     BottomSheetView,
+    useBottomSheet,
+    useBottomSheetModal,
 } from '@gorhom/bottom-sheet';
 import React, { forwardRef, useRef, useImperativeHandle, useState } from 'react';
 import {
@@ -25,6 +27,7 @@ import { TabView, SceneRendererProps, NavigationState } from 'react-native-tab-v
 import ImageGrid from '../ImageGrid';
 import PriceTable from './PriceTable';
 import AppButton from '../ui/AppButton';
+import { useRouter } from 'expo-router';
 
 type TabRoute = {
     key: string;
@@ -44,6 +47,8 @@ export type BottomSheetInputHandle = {
 
 const LocationDetailInfo = forwardRef<BottomSheetInputHandle, Props>(({ location, timeRange, priceTables }, ref) => {
     const bottomSheetRef = useRef<BottomSheetModal>(null);
+    const { dismissAll } = useBottomSheetModal();
+    const router = useRouter();
     const { width } = useWindowDimensions();
     const [index, setIndex] = useState(0);
     const routes: TabRoute[] = [
@@ -123,7 +128,6 @@ const LocationDetailInfo = forwardRef<BottomSheetInputHandle, Props>(({ location
                                     id: image.id.toString(),
                                     image_url: image.image_url,
                                 }))}
-                                onImagePress={(image) => console.log(image)}
                             />
                         ) : (
                             <ThemedText>Không có hình ảnh</ThemedText>
@@ -156,7 +160,15 @@ const LocationDetailInfo = forwardRef<BottomSheetInputHandle, Props>(({ location
                             variant="primary"
                             backgroundColor="#EF9651"
                             color="#fff"
-                            onPress={() => console.log('Đặt sân')}
+                            onPress={() => {
+                                router.push({
+                                    pathname: `/booking/[locationId]`,
+                                    params: {
+                                        locationId: location.id.toString(),
+                                    }
+                                })
+                                dismissAll();
+                            }}
                             styles={{
                                 height: 36,
                             }}
