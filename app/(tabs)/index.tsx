@@ -21,7 +21,7 @@ function DashboardScreen() {
         router.push('/register');
     };
     return (
-        <View style={{ height: '100%', backgroundColor: "#FFF" }} > 
+        <View style={{ height: '100%', backgroundColor: '#FFF' }}>
             <View style={styles.headerWrapper}>
                 <View style={styles.headerContent}>
                     <Image

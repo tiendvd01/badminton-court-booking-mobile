@@ -6,7 +6,7 @@ import LocationItem from './LocationItem';
 function LocationList() {
     const { data: locations } = useLocationsQuery({});
 
-    const locationWithCourt = locations?.data?.data.filter((location) => location.courts.length > 0 || 1);
+    const locationWithCourt = locations?.data?.data.filter((location) => location.courts.length > 0);
 
     return (
         <View style={styles.container}>

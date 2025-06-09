@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { ImageBackground, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { ThemedText } from '../ThemedText';
 import { Image } from 'expo-image';
@@ -7,6 +7,7 @@ import { IconSymbol } from '../ui/IconSymbol';
 import { ILocation } from '@/types/common';
 import { usePriceTablesByLocationQuery } from '@/repository/courtRepository';
 import { toMinutes } from '@/utils/helper';
+import LocationDetailInfo, { BottomSheetInputHandle } from './LocationDetailInfo';
 
 type Props = {
     location: ILocation;
@@ -14,6 +15,7 @@ type Props = {
 
 function LocationItem({ location }: Props) {
     const { data: priceTables } = usePriceTablesByLocationQuery({ locationId: location.id });
+    const bottomSheetRef = useRef<BottomSheetInputHandle>(null);
     const earliestStartTime = priceTables?.data?.data
         ?.flatMap((priceTable) => priceTable.prices)
         .reduce((earliest, current) => {
@@ -25,45 +27,54 @@ function LocationItem({ location }: Props) {
             return toMinutes(current.end_time) > toMinutes(latest) ? current.end_time : latest;
         }, '00:00');
     const timeRange = `${earliestStartTime} - ${latestEndTime}`;
-    
+
     return (
-        <ImageBackground
-            imageStyle={styles.imageContainer}
-            source={
-                location.images.length > 0
-                    ? { uri: location.images?.[0].image_url }
-                    : require('../../assets/images/defaultImage.jpg')
-            }
-        >
-            <View style={styles.iconButtonGroup}>
-                <TouchableOpacity style={styles.iconButton}>
-                    <IconSymbol name="heart" color="#EF9651" size={16} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.iconButton}>
-                    <IconSymbol name="map" color="#EF9651" size={16} />
-                </TouchableOpacity>
-            </View>
-            <View style={styles.contentContainer}>
-                <View style={styles.leftContentPart}>
-                    <Image
-                        source={
-                            location.logo
-                                ? { uri: location.logo }
-                                : require('../../assets/images/shuttlecock_new_bg.png')
-                        }
-                        style={styles.locationLogo}
-                    />
-                </View>
-                <View style={styles.centerContentPart}>
-                    <ThemedText style={styles.locationName}>{location.name}</ThemedText>
-                    <ThemedText style={styles.locationAddress}>{location.address}</ThemedText>
-                    <ThemedText style={styles.locationInfo}>{timeRange}  {location.owner.phone || 'Unknown'}</ThemedText>
-                </View>
-                <View style={styles.rightContentPart}>
-                    <AppButton backgroundColor="#EF9651" variant="primary" title="Đặt lịch" onPress={() => {}} />
-                </View>
-            </View>
-        </ImageBackground>
+        <>
+            <TouchableOpacity onPress={() => bottomSheetRef.current?.present()}>
+                <ImageBackground
+                    imageStyle={styles.imageContainer}
+                    source={
+                        location.images.length > 0
+                            ? { uri: location.images?.[0].image_url }
+                            : require('../../assets/images/defaultImage.jpg')
+                    }
+                >
+                    <View style={styles.iconButtonGroup}>
+                        <TouchableOpacity style={styles.iconButton}>
+                            <IconSymbol name="heart" color="#EF9651" size={16} />
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.contentContainer}>
+                        <View style={styles.leftContentPart}>
+                            <Image
+                                source={
+                                    location.logo
+                                        ? { uri: location.logo }
+                                        : require('../../assets/images/shuttlecock_new_bg.png')
+                                }
+                                style={styles.locationLogo}
+                            />
+                        </View>
+                        <View style={styles.centerContentPart}>
+                            <ThemedText style={styles.locationName}>{location.name}</ThemedText>
+                            <ThemedText style={styles.locationAddress}>{location.address}</ThemedText>
+                            <ThemedText style={styles.locationInfo}>
+                                {timeRange} {location.owner.phone || 'Unknown'}
+                            </ThemedText>
+                        </View>
+                        <View style={styles.rightContentPart}>
+                            <AppButton
+                                backgroundColor="#EF9651"
+                                variant="primary"
+                                title="Đặt lịch"
+                                onPress={() => {}}
+                            />
+                        </View>
+                    </View>
+                </ImageBackground>
+            </TouchableOpacity>
+            <LocationDetailInfo priceTables={priceTables?.data?.data} ref={bottomSheetRef} location={location} timeRange={timeRange} />
+        </>
     );
 }
 
