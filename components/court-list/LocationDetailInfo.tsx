@@ -7,13 +7,24 @@ import {
     BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import React, { forwardRef, useRef, useImperativeHandle, useState } from 'react';
-import { Image, ImageBackground, StyleSheet, Text, View, TouchableOpacity, useWindowDimensions } from 'react-native';
+import {
+    Image,
+    ImageBackground,
+    StyleSheet,
+    Text,
+    View,
+    TouchableOpacity,
+    useWindowDimensions,
+    FlatList,
+    ListRenderItem,
+} from 'react-native';
 import { ThemedText } from '../ThemedText';
 import { IconSymbol } from '../ui/IconSymbol';
 import { Clock, MapPin, Phone } from 'lucide-react-native';
 import { TabView, SceneRendererProps, NavigationState } from 'react-native-tab-view';
 import ImageGrid from '../ImageGrid';
 import PriceTable from './PriceTable';
+import AppButton from '../ui/AppButton';
 
 type TabRoute = {
     key: string;
@@ -34,7 +45,6 @@ export type BottomSheetInputHandle = {
 const LocationDetailInfo = forwardRef<BottomSheetInputHandle, Props>(({ location, timeRange, priceTables }, ref) => {
     const bottomSheetRef = useRef<BottomSheetModal>(null);
     const { width } = useWindowDimensions();
-
     const [index, setIndex] = useState(0);
     const routes: TabRoute[] = [
         { key: 'price', title: 'Bảng giá' },
@@ -78,12 +88,30 @@ const LocationDetailInfo = forwardRef<BottomSheetInputHandle, Props>(({ location
         switch (route.key) {
             case 'price':
                 return (
-                    <View style={{ flex: 1, padding: 12 }}>
-                        {
-                            priceTables?.map((priceTable: IPriceTable) => (
-                                <PriceTable key={priceTable.id} priceData={priceTable} />
-                            ))
-                        }
+                    <View style={styles.priceContainer}>
+                        <FlatList
+                            data={priceTables}
+                            keyExtractor={(item, index) => `price-table-${index}`}
+                            renderItem={({ item: priceTable }) => (
+                                <View style={styles.priceTableWrapper}>
+                                    <View style={styles.priceTableHeader}>
+                                        <ThemedText style={styles.title}>{priceTable?.name || 'No name'}</ThemedText>
+                                        {priceTable?.description && (
+                                            <ThemedText style={styles.description}>{priceTable.description}</ThemedText>
+                                        )}
+                                    </View>
+                                    {priceTable?.prices?.length > 0 ? (
+                                        <PriceTable priceData={priceTable} />
+                                    ) : (
+                                        <View style={styles.noPriceData}>
+                                            <ThemedText>Không có dữ liệu giá</ThemedText>
+                                        </View>
+                                    )}
+                                </View>
+                            )}
+                            contentContainerStyle={styles.priceListContent}
+                            showsVerticalScrollIndicator={false}
+                        />
                     </View>
                 );
             case 'picture':
@@ -118,10 +146,22 @@ const LocationDetailInfo = forwardRef<BottomSheetInputHandle, Props>(({ location
                 enableDismissOnClose
                 handleComponent={null}
             >
-                <BottomSheetView style={styles.container} >
+                <BottomSheetView style={styles.container}>
                     <TouchableOpacity style={styles.backButton} onPress={() => bottomSheetRef.current?.dismiss()}>
                         <IconSymbol name="chevron.left" size={24} color="#000" />
                     </TouchableOpacity>
+                    <View style={styles.bookButton}>
+                        <AppButton
+                            title="Đặt lịch"
+                            variant="primary"
+                            backgroundColor="#EF9651"
+                            color="#fff"
+                            onPress={() => console.log('Đặt sân')}
+                            styles={{
+                                height: 36,
+                            }}
+                        />
+                    </View>
                     <ImageBackground
                         resizeMode="cover"
                         source={
@@ -278,6 +318,47 @@ const styles = StyleSheet.create({
     tabView: {
         flex: 1,
         marginTop: 110,
+    },
+    priceContainer: {
+        flex: 1,
+        padding: 12,
+    },
+    priceTableWrapper: {
+        marginBottom: 24,
+    },
+    priceTableHeader: {
+        marginBottom: 16,
+        paddingHorizontal: 8,
+    },
+    noPriceData: {
+        padding: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f8f9fa',
+        borderRadius: 8,
+        marginTop: 8,
+    },
+    priceListContent: {
+        paddingBottom: 16,
+    },
+    title: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#3F7D58',
+        textAlign: 'center',
+        marginBottom: 8,
+    },
+    description: {
+        fontSize: 14,
+        textAlign: 'center',
+        color: '#6B7280',
+        fontStyle: 'italic',
+    },
+    bookButton: {
+        position: 'absolute',
+        top: 12,
+        right: 12,
+        zIndex: 1,
     },
 });
 

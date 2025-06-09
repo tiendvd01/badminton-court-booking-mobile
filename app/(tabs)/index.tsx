@@ -6,13 +6,14 @@ import useGetCurrentDateStr from '@/hooks/useGetCurrentDateStr';
 import { useAuthStore } from '@/stores/authStore';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 function DashboardScreen() {
     const router = useRouter();
     const { user } = useAuthStore();
     const { formattedDate } = useGetCurrentDateStr();
+    const [courtSearch, setCourtSearch] = useState('');
 
     const handleClickLogin = () => {
         router.push('/login');
@@ -62,14 +63,14 @@ function DashboardScreen() {
                         }}
                     >
                         <View style={{ flex: 1 }}>
-                            <SearchBox />
+                            <SearchBox onChange={(value) => setCourtSearch(value)} />
                         </View>
                         <FavoriteButton />
                     </View>
                 </View>
             </View>
             <ScrollView style={styles.courtListWrapper}>
-                <CourtList />
+                <CourtList search={courtSearch}/>
             </ScrollView>
         </View>
     );

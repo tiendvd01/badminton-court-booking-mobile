@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { StyleSheet, View, TouchableOpacity, Animated, Text, LayoutChangeEvent } from 'react-native';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
@@ -8,7 +8,14 @@ import PlaceholderIcon from '../icons/PlaceholderIcon';
 import AppButton from '../ui/AppButton';
 import { useProvincesQuery } from '@/repository/resourceRepository';
 
-function CourtFilterBar() {
+interface CourtFilterBarProps {
+    onChange?: (filters: {
+        province?: string;
+        district?: string;
+    }) => void;
+}
+
+function CourtFilterBar({ onChange }: CourtFilterBarProps) {
     const [isCollapsed, setIsCollapsed] = useState(true);
     const colorScheme = useColorScheme() ?? 'light';
     const [headerHeight, setHeaderHeight] = useState(60);
@@ -36,13 +43,6 @@ function CourtFilterBar() {
                 label: district.name,
             })) || [];
 
-    const dateRangeOptions: SelectOption[] = [
-        { value: '3days', label: '3 ngày gần nhất' },
-        { value: '7days', label: '7 ngày gần nhất' },
-        { value: '14days', label: '14 ngày gần nhất' },
-        { value: '30days', label: '30 ngày gần nhất' },
-    ];
-
     // Update animated height when header or content height changes
     useEffect(() => {
         animatedHeight.setValue(isCollapsed ? headerHeight : headerHeight + contentHeight);
@@ -67,9 +67,36 @@ function CourtFilterBar() {
         setContentHeight(height);
     };
 
+    // Handle filter changes
+    const handleFilterChange = useCallback((updates: { province?: string; district?: string; dateRange?: string }) => {
+        if (updates.province !== undefined) setProvince(updates.province);
+        if (updates.district !== undefined) setDistrict(updates.district);
+        if (updates.dateRange !== undefined) setDateRange(updates.dateRange);
+    }, []);
+
     const handleProvinceChange = (value: string) => {
-        setProvince(value);
-        setDistrict(''); // Reset district when province changes
+        handleFilterChange({ province: value, district: '' });
+    };
+
+    const handleDistrictChange = (value: string) => {
+        handleFilterChange({ district: value });
+    };
+
+    // Handle reset button press
+    const handleReset = () => {
+        setProvince('');
+        setDistrict('');
+        setDateRange('3days');
+        if (onChange) {
+            onChange({ province: '', district: '' });
+        }
+    };
+
+    // Handle search button press
+    const handleSearch = () => {
+        if (onChange) {
+            onChange({ province, district });
+        }
     };
 
     return (
@@ -118,27 +145,19 @@ function CourtFilterBar() {
                             options={districtOptions}
                             placeholder="Quận/Huyện"
                             value={district}
-                            onChange={setDistrict}
+                            onChange={handleDistrictChange}
                         />
                     </View>
                 </View>
 
                 <View style={styles.filterRow}>
-                    <View style={styles.selectContainer}>
-                        <AppSelect
-                            options={dateRangeOptions}
-                            placeholder="Chọn thời gian"
-                            value={dateRange}
-                            onChange={setDateRange}
-                        />
-                    </View>
                     <View style={styles.actionRow}>
                         <AppButton
                             title="Tìm kiếm"
                             backgroundColor="#2ecc71"
                             color="#fff"
                             styles={{ height: 42 }}
-                            onPress={() => {}}
+                            onPress={handleSearch}
                             variant="primary"
                         />
 
@@ -147,7 +166,7 @@ function CourtFilterBar() {
                             backgroundColor="#f39c12"
                             color="#fff"
                             styles={{ width: 44, height: 42 }}
-                            onPress={() => {}}
+                            onPress={handleReset}
                             variant="primary"
                             icon={<IconSymbol name="arrow.clockwise" size={24} color="#fff" />}
                         />
@@ -187,6 +206,7 @@ const styles = StyleSheet.create({
     filterRow: {
         flexDirection: 'row',
         gap: 10,
+        paddingBottom: 10,
     },
     selectContainer: {
         flex: 1,

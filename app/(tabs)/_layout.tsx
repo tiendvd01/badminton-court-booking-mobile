@@ -2,7 +2,6 @@ import { Tabs } from "expo-router";
 import React from "react";
 import HomeIcon from "@/components/icons/HomeIcon";
 import MapIcon from "@/components/icons/MapIcon";
-import ClockIcon from "@/components/icons/ClockIcon";
 import UserIcon from "@/components/icons/UserIcon";
 import { StyleSheet } from "react-native";
 
@@ -29,13 +28,6 @@ export default function TabLayout() {
                 options={{
                     title: "Bản đồ",
                     tabBarIcon: ({ color, size }) => <MapIcon color={color} size={size} />,
-                }}
-            />
-            <Tabs.Screen
-                name="news"
-                options={{
-                    title: "Nổi bật",
-                    tabBarIcon: ({ color, size }) => <ClockIcon color={color} size={size} />,
                 }}
             />
             <Tabs.Screen

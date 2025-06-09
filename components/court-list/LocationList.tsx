@@ -3,8 +3,12 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import LocationItem from './LocationItem';
 
-function LocationList() {
-    const { data: locations } = useLocationsQuery({});
+function LocationList({ province, district, search }: { province?: string; district?: string; search?: string }) {
+    const { data: locations } = useLocationsQuery({
+        province: province?.replace(/^tinh_|^thanh_pho_/, ''),
+        district: district?.replace(/^quan_|^huyen_/, ''),
+        search,
+    });
 
     const locationWithCourt = locations?.data?.data.filter((location) => location.courts.length > 0);
 

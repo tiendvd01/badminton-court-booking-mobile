@@ -1,18 +1,39 @@
-import React from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, TextInput, View, TouchableOpacity } from 'react-native';
 import SearchIcon from './icons/SearchIcon';
 
-function SearchBox() {
+interface SearchBoxProps {
+  onChange?: (value: string) => void;
+  placeholder?: string;
+}
+
+function SearchBox({ onChange, placeholder = 'Tìm kiếm' }: SearchBoxProps) {
+  const [searchText, setSearchText] = useState('');
+
+  const handleSearch = () => {
+    if (onChange && searchText.trim()) {
+      onChange(searchText.trim());
+    }
+  };
+
   return (
     <View style={styles.container}>
       <TextInput
         style={styles.textInput}
-        placeholder="Tìm kiếm"
+        placeholder={placeholder}
         placeholderTextColor="#A0A0A0"
+        value={searchText}
+        onChangeText={setSearchText}
+        onSubmitEditing={handleSearch}
+        returnKeyType="search"
       />
-      <View style={styles.icon}>
+      <TouchableOpacity 
+        style={styles.icon} 
+        onPress={handleSearch}
+        activeOpacity={0.7}
+      >
         <SearchIcon size={20} color="#A0A0A0" />
-      </View>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -33,6 +54,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: '100%',
     color: '#000',
+    paddingRight: 30, // Để tránh chữ bị đè lên icon
   },
   icon: {
     position: 'absolute',
@@ -40,6 +62,7 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 8,
   },
 });
 

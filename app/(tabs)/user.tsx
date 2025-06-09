@@ -1,7 +1,6 @@
 import AppButton from "@/components/ui/AppButton";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { useRouter } from 'expo-router';
-import LocationDetailInfo from "@/components/LocationDetailInfo";
 
 export default function LoginScreen() {
     const router = useRouter();
