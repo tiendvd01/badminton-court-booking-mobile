@@ -31,9 +31,11 @@ export interface ICourt {
     id: number;
     name: string;
     location_id: number;
-    description: string;
+    image_url?: string;
     is_active: boolean;
+    location?: ILocation;
     price_table_id: number;
+    priceTable?: IPriceTable;
 }
 
 export interface ILocationImage {

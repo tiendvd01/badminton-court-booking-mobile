@@ -6,7 +6,7 @@ import AppButton from '../ui/AppButton';
 import { IconSymbol } from '../ui/IconSymbol';
 import { ILocation } from '@/types/common';
 import { usePriceTablesByLocationQuery } from '@/repository/courtRepository';
-import { toMinutes } from '@/utils/helper';
+import { getTimeRange } from '@/utils/helper';
 import LocationDetailInfo, { BottomSheetInputHandle } from './LocationDetailInfo';
 import { useRouter } from 'expo-router';
 
@@ -18,17 +18,10 @@ function LocationItem({ location }: Props) {
     const { data: priceTables } = usePriceTablesByLocationQuery({ locationId: location.id });
     const router = useRouter();
     const bottomSheetRef = useRef<BottomSheetInputHandle>(null);
-    const earliestStartTime = priceTables?.data?.data
-        ?.flatMap((priceTable) => priceTable.prices)
-        .reduce((earliest, current) => {
-            return toMinutes(current.start_time) < toMinutes(earliest) ? current.start_time : earliest;
-        }, '24:00');
-    const latestEndTime = priceTables?.data?.data
-        ?.flatMap((priceTable) => priceTable.prices)
-        .reduce((latest, current) => {
-            return toMinutes(current.end_time) > toMinutes(latest) ? current.end_time : latest;
-        }, '00:00');
-    const timeRange = `${earliestStartTime} - ${latestEndTime}`;
+    
+    const timeRange = getTimeRange(priceTables?.data?.data || []);
+
+    const timeRangeString = `${timeRange.earliestStartTime} - ${timeRange.latestEndTime}`;
 
     return (
         <>
@@ -61,7 +54,7 @@ function LocationItem({ location }: Props) {
                             <ThemedText style={styles.locationName}>{location.name}</ThemedText>
                             <ThemedText style={styles.locationAddress}>{location.address}</ThemedText>
                             <ThemedText style={styles.locationInfo}>
-                                {timeRange} {location.owner.phone || 'Unknown'}
+                                {timeRangeString} {location.owner.phone || 'Unknown'}
                             </ThemedText>
                         </View>
                         <View style={styles.rightContentPart}>
@@ -86,7 +79,7 @@ function LocationItem({ location }: Props) {
                 priceTables={priceTables?.data?.data}
                 ref={bottomSheetRef}
                 location={location}
-                timeRange={timeRange}
+                timeRange={timeRangeString}
             />
         </>
     );

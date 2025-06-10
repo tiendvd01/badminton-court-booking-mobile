@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import DatePicker from '@/components/ui/DatePicker';
 import CourtStateInfo from '@/components/bookings/CourtStateInfo';
 import AppLink from '@/components/ui/AppLink';
+import BookingSheet from '@/components/bookings/BookingSheet';
 
 function BookingScreen() {
     const router = useRouter();
@@ -30,6 +31,7 @@ function BookingScreen() {
                         onPress={() => router.push(`/booking/${locationId}/price`)}
                     />
                 </View>
+                <View style={styles.bookingSheetContainer}><BookingSheet locationId={Number(locationId)} /></View>
             </SafeAreaView>
         </>
     );
@@ -63,6 +65,9 @@ const styles = StyleSheet.create({
     priceLinkContainer: {
         marginTop: 16,
         paddingLeft: 10,
+    },
+    bookingSheetContainer: {
+        marginTop: 16,
     },
 });
 

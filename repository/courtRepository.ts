@@ -1,5 +1,5 @@
 import httpService from '@/libs/httpService';
-import { ILocation, IPriceTable, IResponse } from '@/types/common';
+import { ILocation, IPriceTable, IResponse, ICourt } from '@/types/common';
 import { useQuery } from '@tanstack/react-query';
 
 interface GetLocationsParams {
@@ -53,3 +53,29 @@ export const usePriceTablesByLocationQuery = ({
         enabled: enabled && !!locationId,
     });
 };
+
+interface GetCourtsByLocationParams {
+    locationId: number;
+}
+
+export const getCourtsByLocation = ({ locationId }: GetCourtsByLocationParams) => {
+    return httpService.get<IResponse & { data: ICourt[] }>(
+        `${process.env.EXPO_PUBLIC_API_URL}/locations/${locationId}/courts`,
+        { params: { locationId } }
+    );
+};
+
+export const CourtsByLocationQueryKey = (params: GetCourtsByLocationParams) => ['courts-by-location', params];
+
+export const useCourtsByLocationQuery = ({
+    locationId,
+    enabled = true,
+    ...params
+}: { enabled?: boolean } & GetCourtsByLocationParams) => {
+    return useQuery({
+        queryKey: CourtsByLocationQueryKey({ locationId, ...params }),
+        queryFn: () => getCourtsByLocation({ locationId, ...params }),
+        enabled: enabled && !!locationId,
+    });
+};
+
