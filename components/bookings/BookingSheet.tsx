@@ -4,12 +4,14 @@ import { getTimeRange } from '@/utils/helper';
 import React, { useState, useCallback } from 'react';
 import { ScrollView, StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
 import AppButton from '../ui/AppButton';
+import { useBookingStore } from '@/stores/bookingStore';
+import { useRouter } from 'expo-router';
 
 type Props = {
     locationId: number;
 };
 
-type SelectedCell = {
+export type SelectedCell = {
     courtId: number;
     startTime: string;
     endTime: string;
@@ -21,7 +23,8 @@ function BookingSheet({ locationId }: Props) {
     const courtsByLocationQuery = useCourtsByLocationQuery({ locationId });
     const courts = courtsByLocationQuery.data?.data?.data || [];
     const [cellWidth, setCellWidth] = useState(0);
-    const [selectedCells, setSelectedCells] = useState<SelectedCell[]>([]);
+    const router = useRouter();
+    const { selectedCells, setSelectedCells } = useBookingStore();
 
     const generateTimeSlots = (start: string, end: string, intervalMinutes: number) => {
         const slots = [];
@@ -60,46 +63,47 @@ function BookingSheet({ locationId }: Props) {
             const startTime = timeSlots[timeSlotIndex];
             const endTime = timeSlots[timeSlotIndex + 1] || timeRange.latestEndTime;
 
-            setSelectedCells((prev) => {
-                const existingIndex = prev.findIndex(
-                    (cell) => cell.courtId === courtId && cell.startTime === startTime && cell.endTime === endTime,
-                );
+            // Get current cells from the store
+            const currentCells = useBookingStore.getState().selectedCells;
+            
+            const existingIndex = currentCells.findIndex(
+                (cell: SelectedCell) => 
+                    cell.courtId === courtId && 
+                    cell.startTime === startTime && 
+                    cell.endTime === endTime
+            );
 
-                if (existingIndex >= 0) {
-                    return prev.filter((_, idx) => idx !== existingIndex);
-                } else {
-                    return [
-                        ...prev,
-                        {
-                            courtId,
-                            startTime,
-                            endTime,
-                        },
-                    ];
-                }
-            });
+            if (existingIndex >= 0) {
+                // Remove the cell if it exists
+                const newCells = currentCells.filter((_, idx: number) => idx !== existingIndex);
+                useBookingStore.getState().setSelectedCells(newCells);
+            } else {
+                // Add new cell if it doesn't exist
+                const courtData = courts.find(court => court.id === courtId);
+                const newCell: SelectedCell = {
+                    courtId,
+                    startTime,
+                    endTime,
+                    courtData,
+                };
+                useBookingStore.getState().setSelectedCells([...currentCells, newCell]);
+            }
         },
         [timeSlots, timeRange.latestEndTime],
     );
 
     const handleRegister = () => {
         // TODO: Implement registration logic
+        if (selectedCells.length === 0) {
+            Alert.alert('Lỗi', 'Vui lòng chọn ít nhất một khung giờ để đăng ký');
+            return;
+        }
         Alert.alert('Đăng ký', 'Bạn có chắc chắn muốn đăng ký các khung giờ đã chọn?', [
             { text: 'Hủy', style: 'cancel' },
             {
                 text: 'Đồng ý',
                 onPress: () => {
-                    // Handle registration
-                    console.log(
-                        'Đăng ký các khung giờ đã chọn:',
-                        selectedCells.map((cell) => ({
-                            courtId: cell.courtId,
-                            startTime: cell.startTime,
-                            endTime: cell.endTime,
-                        })),
-                    );
-                    // Reset selection after registration
-                    setSelectedCells([]);
+                    router.push(`/booking/${locationId}/confirm`);
                 },
             },
         ]);

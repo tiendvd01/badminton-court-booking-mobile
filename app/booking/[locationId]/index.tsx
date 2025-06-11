@@ -6,10 +6,11 @@ import DatePicker from '@/components/ui/DatePicker';
 import CourtStateInfo from '@/components/bookings/CourtStateInfo';
 import AppLink from '@/components/ui/AppLink';
 import BookingSheet from '@/components/bookings/BookingSheet';
+import { useBookingStore } from '@/stores/bookingStore';
 
 function BookingScreen() {
     const router = useRouter();
-    const [selectedDate, setSelectedDate] = useState('');
+    const { setSelectedCells, setBookingDate } = useBookingStore();
 
     const { locationId } = useGlobalSearchParams();
     return (
@@ -22,7 +23,7 @@ function BookingScreen() {
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>Đặt lịch ngày trực quan</Text>
                 </View>
-                <DatePicker onDateSelect={(date) => setSelectedDate(date)} />
+                <DatePicker onDateSelect={(date) => setBookingDate(date)} />
                 <CourtStateInfo />
                 <View style={styles.priceLinkContainer}>
                     <AppLink

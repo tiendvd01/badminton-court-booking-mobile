@@ -28,6 +28,30 @@ export const useLocationsQuery = ({
     });
 };
 
+interface GetLocationByIdParams {
+    locationId: number;
+}
+
+export const getLocationById = ({ locationId }: GetLocationByIdParams) => {
+    return httpService.get<IResponse & { data: ILocation }>(
+        `${process.env.EXPO_PUBLIC_API_URL}/locations/${locationId}`
+    );
+};
+
+export const LocationByIdQueryKey = (params: GetLocationByIdParams) => ['location-by-id', params];
+
+export const useLocationByIdQuery = ({
+    locationId,
+    enabled = true,
+    ...params
+}: { enabled?: boolean } & GetLocationByIdParams) => {
+    return useQuery({
+        queryKey: LocationByIdQueryKey({ locationId, ...params }),
+        queryFn: () => getLocationById({ locationId, ...params }),
+        enabled: enabled && !!locationId,
+    });
+};
+
 interface GetPriceTablesByLocationParams {
     locationId: number;
     // Add other potential query parameters here if needed in the future
