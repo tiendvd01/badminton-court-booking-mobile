@@ -8,6 +8,7 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { formatVietnameseDate } from '@/utils/dateUtils';
 import { Controller, useForm } from 'react-hook-form';
 import AppButton from '@/components/ui/AppButton';
+import { useCreateBookingMutation } from '@/repository/bookingRepository';
 
 type FormData = {
     name: string;
@@ -18,7 +19,7 @@ type FormData = {
 function ConfirmScreen() {
     const { selectedCells, bookingDate, setBookingInfo } = useBookingStore();
     const { locationId } = useLocalSearchParams();
-
+    const createBookingMutation = useCreateBookingMutation();
     const locationQuery = useLocationByIdQuery({ locationId: Number(locationId) });
     const location = locationQuery.data?.data?.data;
 
@@ -40,7 +41,27 @@ function ConfirmScreen() {
             phone: data.phone,
             notes: data.notes,
         });
-        router.push(`/booking/${locationId}/payment`);
+        createBookingMutation.mutate({
+            slots: selectedCells.map((item) => ({
+                courtId: item.courtId,
+                startTime: item.startTime,
+                endTime: item.endTime,
+            })),
+            locationId: Number(locationId),
+            customer_info: {
+                name: data.name,
+                phone_number: data.phone,
+            },
+            booking_date: bookingDate,
+            note: data.notes,
+        }, {
+            onSuccess: (data) => {
+                router.push(`/booking/${locationId}/${data.data.data.id}`);
+            },
+            onError: () => {
+                Alert.alert('Lỗi', "Có lỗi xảy ra");
+            },
+        })
     }; 
     
     const phoneRegex = /^(0|\+84)(\s|\.)?((3[2-9])|(5[689])|(7[06-9])|(8[1-9])|(9[0-46-9]))(\d)(\s|\.)?(\d{3})(\s|\.)?(\d{3})$/;
@@ -269,7 +290,6 @@ function ConfirmScreen() {
                                             <TextInput
                                                 style={[
                                                     styles.input,
-                                                    styles.phoneInput,
                                                     errors.phone && styles.inputError,
                                                 ]}
                                                 placeholder="Nhập số điện thoại"

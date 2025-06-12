@@ -65,3 +65,53 @@ export interface IPrice {
     end_time: string;
     price: number;
 }
+
+export interface IBooking {
+    id: number;
+    customer_info: {
+        name: string;
+        phone_number: string;
+    };
+    booking_code: string;
+    booking_date: string;
+    slots: {
+        court_id: number;
+        start_time: string;
+        end_time: string;
+    }[];
+    total_price: number;
+    note?: string;
+    status: string;
+    payment_image?: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface IOwnerPayment {
+    id: number;
+    account_name: string;
+    payment_number: string;
+    bank_info: BankInfo;
+    bank_code: string;
+    owner_id: string;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+
+export interface BankInfo {
+    id: string;
+    name: string;
+    code: string;
+    bin: string;
+    shortName: string;
+    logo: string;
+    transferSupported: number;
+    lookupSupported: number;
+    short_name: string;
+    support: number;
+    isTransfer: number;
+    swift_code: string;
+  }
+  

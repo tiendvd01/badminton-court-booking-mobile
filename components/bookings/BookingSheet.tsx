@@ -6,6 +6,7 @@ import { ScrollView, StyleSheet, Text, View, TouchableOpacity, Alert } from 'rea
 import AppButton from '../ui/AppButton';
 import { useBookingStore } from '@/stores/bookingStore';
 import { useRouter } from 'expo-router';
+import { useCreateBookingMutation } from '@/repository/bookingRepository';
 
 type Props = {
     locationId: number;
@@ -23,6 +24,7 @@ function BookingSheet({ locationId }: Props) {
     const courtsByLocationQuery = useCourtsByLocationQuery({ locationId });
     const courts = courtsByLocationQuery.data?.data?.data || [];
     const [cellWidth, setCellWidth] = useState(0);
+    const [courtCellWidth, setCourtCellWidth] = useState(0);
     const router = useRouter();
     const { selectedCells, setSelectedCells } = useBookingStore();
 
@@ -137,7 +139,7 @@ function BookingSheet({ locationId }: Props) {
         return (
             <>
                 {courts.map((court) => (
-                    <View key={court.id} style={styles.sheetContainer}>
+                    <View key={court.id} style={[styles.sheetContainer, { paddingLeft: courtCellWidth }]}>
                         {renderRow(court)}
                     </View>
                 ))}
@@ -151,7 +153,10 @@ function BookingSheet({ locationId }: Props) {
         return (
             <View style={styles.courtList}>
                 {courts.map((court, index) => (
-                    <View key={court.id} style={[styles.courtCell, { height: cellWidth }]}>
+                    <View onLayout={(e) => {
+                        const width = e.nativeEvent.layout.width;
+                        setCourtCellWidth(width);
+                    }} key={court.id} style={[styles.courtCell, { height: cellWidth, minWidth: courtCellWidth }]}>
                         <Text>{court.name || index + 1}</Text>
                     </View>
                 ))}
@@ -164,7 +169,7 @@ function BookingSheet({ locationId }: Props) {
             <View style={styles.sheetWrapper}>
                 <ScrollView horizontal style={styles.container} stickyHeaderIndices={[0]}>
                     <View style={styles.wrapper}>
-                        <View style={styles.timeContainer}>
+                        <View style={[styles.timeContainer, { paddingLeft: courtCellWidth }]}>
                             {timeSlots.map((time, index) => (
                                 <View
                                     onLayout={(e) => {
@@ -185,7 +190,9 @@ function BookingSheet({ locationId }: Props) {
                 <View style={styles.courtContainer}>{renderCourtList()}</View>
             </View>
             <View style={styles.registerButtonContainer}>
-                <AppButton title="Đăng ký" onPress={handleRegister} backgroundColor="#EF9651" variant="primary" />
+                <AppButton title="Đăng ký" onPress={handleRegister} backgroundColor="#EF9651" variant="primary" styles={{
+                    height: 50,
+                }} />
             </View>
         </>
     );
@@ -213,7 +220,6 @@ const styles = StyleSheet.create({
         padding: 16,
         borderWidth: 1,
         borderColor: '#ccc',
-        width: 100,
     },
     container: {
         minHeight: '80%',
@@ -228,10 +234,8 @@ const styles = StyleSheet.create({
         maxHeight: 40,
         alignItems: 'center',
         backgroundColor: '#63a1f2',
-        paddingLeft: 100,
     },
     sheetContainer: {
-        paddingHorizontal: 100,
         display: 'flex',
         flexDirection: 'row',
     },

@@ -1,5 +1,5 @@
-import { Stack, useGlobalSearchParams } from 'expo-router';
-import React, { useState } from 'react';
+import { useGlobalSearchParams } from 'expo-router';
+import React from 'react';
 import { View, TouchableOpacity, StyleSheet, Text, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
 import DatePicker from '@/components/ui/DatePicker';
