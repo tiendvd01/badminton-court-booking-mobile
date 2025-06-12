@@ -6,6 +6,7 @@ function Layout() {
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="price" options={{ headerShown: false }} />
             <Stack.Screen name="confirm" options={{ headerShown: false }} />
+            <Stack.Screen name="payment" options={{ headerShown: false }} />
         </Stack>
     );
 }

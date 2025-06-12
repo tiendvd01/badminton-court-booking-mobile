@@ -9,19 +9,20 @@ interface BookingStore {
     setSelectedCells: (cells: SelectedCell[]) => void;
     setBookingInfo: (info: any) => void;
     setBookingDate: (date: string) => void;
+    reset: () => void;
 }
 
 const initialState: Partial<BookingStore> = {
     selectedCells: [],
     bookingInfo: {},
-    bookingDate: '',
+    bookingDate: new Date().toISOString(),
 }
 
 export const useBookingStore = create<BookingStore>((set) => {
     return {
         selectedCells: [],
         bookingInfo: {},
-        bookingDate: getCurrentVietnameseDate(),
+        bookingDate: new Date().toISOString(),
         setSelectedCells: (cells: SelectedCell[]) => set({ selectedCells: cells }),
         setBookingInfo: (info: any) => set({ bookingInfo: info }),
         setBookingDate: (date: string) => set({ bookingDate: date }),

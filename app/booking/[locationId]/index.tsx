@@ -10,20 +10,27 @@ import { useBookingStore } from '@/stores/bookingStore';
 
 function BookingScreen() {
     const router = useRouter();
-    const { setSelectedCells, setBookingDate } = useBookingStore();
+    const { setSelectedCells, setBookingDate, reset } = useBookingStore();
 
     const { locationId } = useGlobalSearchParams();
+
+    const handleBack = () => {
+        reset();
+        router.back();
+    }
     return (
         <>
             <SafeAreaView style={styles.container}>
                 {/* Header */}
                 <View style={styles.header}>
-                    <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+                    <TouchableOpacity style={styles.backButton} onPress={handleBack}>
                         <Text style={styles.backArrow}>←</Text>
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>Đặt lịch ngày trực quan</Text>
                 </View>
-                <DatePicker onDateSelect={(date) => setBookingDate(date)} />
+                <DatePicker onDateSelect={(date) => {
+                    setBookingDate(date)
+                }} />
                 <CourtStateInfo />
                 <View style={styles.priceLinkContainer}>
                     <AppLink
