@@ -108,3 +108,19 @@ export const useCancelBookingMutation = () => {
         mutationFn: (data: { bookingId: number }) => cancelBooking(data),
     });
 };
+
+export const confirmBooking = (data: { bookingId: number, paymentImageUrl: string }) => {
+    return httpService.post<IResponse & { data: IBooking }>(
+        `${process.env.EXPO_PUBLIC_API_URL}/bookings/confirm`,
+        {
+            bookingId: data.bookingId,
+            paymentImageUrl: data.paymentImageUrl,
+        },
+    );
+};
+
+export const useConfirmBookingMutation = () => {
+    return useMutation({
+        mutationFn: (data: { bookingId: number, paymentImageUrl: string }) => confirmBooking(data),
+    });
+};

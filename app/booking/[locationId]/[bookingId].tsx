@@ -18,6 +18,8 @@ declare module 'expo-sharing' {
 
 import { useBookingByIdQuery } from '@/repository/bookingRepository';
 import { useOwnerPaymentsByOwnerIdQuery } from '@/repository/paymentRepository';
+import { useConfirmBookingMutation } from '@/repository/bookingRepository';
+import { useUploadImageMutation } from '@/repository/uploadRepository';
 import { Loader } from 'lucide-react-native';
 
 interface Slot {
@@ -45,7 +47,8 @@ function PaymentScreen() {
     const ownerPaymentsQuery = useOwnerPaymentsByOwnerIdQuery({ id: Number(location?.owner_id), isActive: true });
     const ownerPayments = ownerPaymentsQuery.data?.data?.data;
 
-
+    const confirmBookingMutation = useConfirmBookingMutation();
+    const uploadImageMutation = useUploadImageMutation();
 
     // Calculate total hours
     const calculateTotalHours = () => {
@@ -142,19 +145,46 @@ function PaymentScreen() {
 
 
     const pickImage = async () => {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-            Alert.alert('Cần quyền truy cập thư viện ảnh');
-            return;
-        }
+        try {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Cần quyền truy cập thư viện ảnh');
+                return;
+            }
 
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            quality: 1,
-        });
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                quality: 1,
+                base64: true,
+            });
 
-        if (!result.canceled) {
-            setPaymentImage(result.assets[0].uri);
+            if (!result.canceled && result.assets[0]) {
+                const uri = result.assets[0].uri;
+                const filename = uri.split('/').pop() || `upload_${Date.now()}.jpg`;
+                const match = /\.(\w+)$/.exec(filename);
+                const type = match ? `image/${match[1]}` : 'image';
+                
+                // Fetch the image
+                const response = await fetch(uri);
+                const blob = await response.blob();
+                
+                // Create a File object
+                const file = new File([blob], filename, { type });
+                
+                uploadImageMutation.mutate(file, {
+                    onSuccess: (data) => {
+                        setPaymentImage(data.data.url);
+                    },
+                    onError: (error) => {
+                        console.error('Error uploading image:', error);
+                        Alert.alert('Lỗi', 'Không thể tải ảnh lên');
+                    },
+                });
+                
+            }
+        } catch (error) {
+            console.error('Error picking image:', error);
+            Alert.alert('Lỗi', 'Không thể tải ảnh lên');
         }
     };
 
@@ -163,6 +193,20 @@ function PaymentScreen() {
             Alert.alert('Lỗi', 'Vui lòng tải lên ảnh chuyển khoản');
             return;
         }
+
+        confirmBookingMutation.mutate({
+            bookingId: Number(bookingId),
+            paymentImageUrl: paymentImage,
+        }, {
+            onSuccess: () => {
+                Alert.alert('Thành công', 'Đã xác nhận thanh toán');
+                router.push(`/history/${bookingId}`);
+            },
+            onError: (error) => {
+                Alert.alert('Lỗi', error instanceof Error ? error.message : 'Không thể xác nhận thanh toán. Vui lòng thử lại.');
+                console.error('Confirm booking error:', error);
+            },
+        });
     };
 
     return (
