@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
 import { useBookingStore } from '@/stores/bookingStore';
 import { useLocalSearchParams } from 'expo-router';
@@ -9,6 +9,7 @@ import { formatVietnameseDate } from '@/utils/dateUtils';
 import { Controller, useForm } from 'react-hook-form';
 import AppButton from '@/components/ui/AppButton';
 import { useCreateBookingMutation } from '@/repository/bookingRepository';
+import { useAsyncStorage } from '@react-native-async-storage/async-storage';
 
 type FormData = {
     name: string;
@@ -22,6 +23,8 @@ function ConfirmScreen() {
     const createBookingMutation = useCreateBookingMutation();
     const locationQuery = useLocationByIdQuery({ locationId: Number(locationId) });
     const location = locationQuery.data?.data?.data;
+    const storage = useAsyncStorage("bookingIds");
+    const customerStorage = useAsyncStorage("customerInfo");
 
     const {
         control,
@@ -35,11 +38,11 @@ function ConfirmScreen() {
         },
     });
 
-    const onSubmit = (data: FormData) => {
+    const onSubmit = (formData: FormData) => {
         setBookingInfo({
-            name: data.name,
-            phone: data.phone,
-            notes: data.notes,
+            name: formData.name,
+            phone: formData.phone,
+            notes: formData.notes,
         });
         createBookingMutation.mutate({
             slots: selectedCells.map((item) => ({
@@ -47,15 +50,24 @@ function ConfirmScreen() {
                 startTime: item.startTime,
                 endTime: item.endTime,
             })),
-            locationId: Number(locationId),
+            location_id: Number(locationId),
             customer_info: {
-                name: data.name,
-                phone_number: data.phone,
+                name: formData.name,
+                phone_number: formData.phone,
             },
             booking_date: bookingDate,
-            note: data.notes,
+            note: formData.notes,
         }, {
-            onSuccess: (data) => {
+            onSuccess: async (data) => {
+                const bookingIds = JSON.parse(await storage.getItem() || "[]");
+                const newBookingIds = [...bookingIds, data.data.data.id];
+                await storage.setItem(JSON.stringify(newBookingIds));
+
+                const customerInfo = JSON.stringify({
+                    name: formData.name,
+                    phone: formData.phone,
+                });
+                await customerStorage.setItem(customerInfo);
                 router.push(`/booking/${locationId}/${data.data.data.id}`);
             },
             onError: () => {
@@ -65,6 +77,27 @@ function ConfirmScreen() {
     }; 
     
     const phoneRegex = /^(0|\+84)(\s|\.)?((3[2-9])|(5[689])|(7[06-9])|(8[1-9])|(9[0-46-9]))(\d)(\s|\.)?(\d{3})(\s|\.)?(\d{3})$/;
+
+    useEffect(() => {
+        const loadCustomerInfo = async () => {
+            try {
+                const value = await customerStorage.getItem();
+                if (value) {
+                    const customerInfo = JSON.parse(value);
+                    if (customerInfo) {
+                        setBookingInfo({
+                            name: customerInfo.name,
+                            phone: customerInfo.phone,
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load customer info', error);
+            }
+        };
+
+        loadCustomerInfo();
+    }, []);
 
     return (
         <SafeAreaView style={styles.container}>

@@ -103,3 +103,28 @@ export const useCourtsByLocationQuery = ({
     });
 };
 
+interface GetCourtByIdParams {
+    courtId: number;
+}
+
+export const getCourtById = ({ courtId }: GetCourtByIdParams) => {
+    return httpService.get<IResponse & { data: ICourt }>(
+        `${process.env.EXPO_PUBLIC_API_URL}/locations/courts/${courtId}`
+    );
+};
+
+export const CourtByIdQueryKey = (params: GetCourtByIdParams) => ['court-by-id', params];
+
+export const useCourtByIdQuery = ({
+    courtId,
+    enabled = true,
+    ...params
+}: { enabled?: boolean } & GetCourtByIdParams) => {
+    return useQuery({
+        queryKey: CourtByIdQueryKey({ courtId, ...params }),
+        queryFn: () => getCourtById({ courtId, ...params }),
+        enabled: enabled && !!courtId,
+    });
+};
+
+

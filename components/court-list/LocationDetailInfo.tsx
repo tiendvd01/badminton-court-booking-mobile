@@ -3,9 +3,7 @@ import {
     BottomSheetBackdrop,
     BottomSheetBackdropProps,
     BottomSheetModal,
-    BottomSheetScrollView,
     BottomSheetView,
-    useBottomSheet,
     useBottomSheetModal,
 } from '@gorhom/bottom-sheet';
 import React, { forwardRef, useRef, useImperativeHandle, useState } from 'react';
@@ -18,7 +16,6 @@ import {
     TouchableOpacity,
     useWindowDimensions,
     FlatList,
-    ListRenderItem,
 } from 'react-native';
 import { ThemedText } from '../ThemedText';
 import { IconSymbol } from '../ui/IconSymbol';

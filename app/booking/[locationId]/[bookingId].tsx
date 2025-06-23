@@ -32,7 +32,7 @@ interface CourtSlots {
 
 function PaymentScreen() {
     const { locationId } = useLocalSearchParams();
-    const [timeLeft, setTimeLeft] = useState(15 * 60); // 15 minutes in seconds
+    const [timeLeft, setTimeLeft] = useState(0);
     const [paymentImage, setPaymentImage] = useState<string | null>(null);
 
     const { bookingId } = useLocalSearchParams();
@@ -63,22 +63,32 @@ function PaymentScreen() {
         }, 0) || 0;
     };
 
-    // Countdown timer
+    // Countdown timer based on booking created_at
     useEffect(() => {
-        if (timeLeft <= 0) return;
+        if (!booking?.created_at) return;
 
+        const calculateTimeLeft = () => {
+            const bookingTime = new Date(booking.created_at).getTime();
+            const expirationTime = bookingTime + (5 * 60 * 1000); // 5 minutes from booking time
+            const now = new Date().getTime();
+            const remaining = Math.max(0, Math.floor((expirationTime - now) / 1000));
+            return remaining;
+        };
+
+        // Set initial time
+        setTimeLeft(calculateTimeLeft());
+
+        // Update timer every second
         const timer = setInterval(() => {
-            setTimeLeft(prev => {
-                if (prev <= 1) {
-                    clearInterval(timer);
-                    return 0;
-                }
-                return prev - 1;
-            });
+            const remaining = calculateTimeLeft();
+            setTimeLeft(remaining);
+            if (remaining <= 0) {
+                clearInterval(timer);
+            }
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [timeLeft]);
+    }, [booking?.created_at]);
 
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
@@ -153,8 +163,6 @@ function PaymentScreen() {
             Alert.alert('Lỗi', 'Vui lòng tải lên ảnh chuyển khoản');
             return;
         }
-        // Handle payment confirmation
-        router.push(`/booking/${locationId}/success`);
     };
 
     return (

@@ -7,31 +7,32 @@ interface CourtStateInfoProps {
   textStyle?: object;
 }
 
+export const states = [
+  { 
+    id: 'available', 
+    label: 'Trống', 
+    color: '#FFFFFF',
+    borderColor: '#4CAF50'
+  },
+  { 
+    id: 'booked', 
+    label: 'Đã đặt', 
+    color: '#FF6B6B',
+    borderColor: '#FF6B6B'
+  },
+  { 
+    id: 'locked', 
+    label: 'Khóa', 
+    color: '#9E9E9E',
+    borderColor: '#9E9E9E'
+  }
+];
+
 const CourtStateInfo: React.FC<CourtStateInfoProps> = ({ 
   containerStyle = {},
   itemStyle = {},
   textStyle = {} 
 }) => {
-  const states = [
-    { 
-      id: 'available', 
-      label: 'Trống', 
-      color: '#FFFFFF',
-      borderColor: '#4CAF50'
-    },
-    { 
-      id: 'booked', 
-      label: 'Đã đặt', 
-      color: '#FF6B6B',
-      borderColor: '#FF6B6B'
-    },
-    { 
-      id: 'locked', 
-      label: 'Khóa', 
-      color: '#9E9E9E',
-      borderColor: '#9E9E9E'
-    }
-  ];
 
   return (
     <View style={[styles.container, containerStyle]}>

@@ -1,12 +1,13 @@
-import { useCourtsByLocationQuery, usePriceTablesByLocationQuery } from '@/repository/courtRepository';
+import { useCourtsByLocationQuery, useLocationByIdQuery, usePriceTablesByLocationQuery } from '@/repository/courtRepository';
 import { ICourt } from '@/types/common';
 import { getTimeRange } from '@/utils/helper';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { ScrollView, StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
 import AppButton from '../ui/AppButton';
 import { useBookingStore } from '@/stores/bookingStore';
 import { useRouter } from 'expo-router';
-import { useCreateBookingMutation } from '@/repository/bookingRepository';
+import { useBookingsQuery } from '@/repository/bookingRepository';
+import { states } from './CourtStateInfo';
 
 type Props = {
     locationId: number;
@@ -20,6 +21,21 @@ export type SelectedCell = {
 };
 
 function BookingSheet({ locationId }: Props) {
+    const locationQuery = useLocationByIdQuery({ locationId });
+    const bookingsQuery = useBookingsQuery({ locationId, status: ["pending", "confirmed", "completed"] });
+    const bookedSlots = bookingsQuery.data?.data?.data?.reduce((acc, booking) => {
+        booking.slots.forEach(slot => {
+            if(!acc[slot.court_id.toString()]) {
+                acc[slot.court_id.toString()] = [];  
+            }
+            acc[slot.court_id.toString()].push({
+                startTime: slot.start_time,
+                endTime: slot.end_time,
+            })
+        })
+        return acc;
+    }, {} as { [key: string]: { startTime: string; endTime: string }[] });
+    
     const priceTableQuery = usePriceTablesByLocationQuery({ locationId });
     const courtsByLocationQuery = useCourtsByLocationQuery({ locationId });
     const courts = courtsByLocationQuery.data?.data?.data || [];
@@ -56,7 +72,7 @@ function BookingSheet({ locationId }: Props) {
 
     const timeRange = getTimeRange(priceTableQuery.data?.data?.data || []);
 
-    const timeSlots = generateTimeSlots(timeRange.earliestStartTime, timeRange.latestEndTime, 30);
+    const timeSlots = generateTimeSlots(timeRange.earliestStartTime, timeRange.latestEndTime, locationQuery.data?.data?.data?.min_shift_time || 30);
 
     const cellCount = timeSlots.length - 1;
 
@@ -111,6 +127,13 @@ function BookingSheet({ locationId }: Props) {
         ]);
     };
 
+    const isCellBooked = (courtId: number, timeSlotIndex: number) => {
+        const startTime = timeSlots[timeSlotIndex];
+        const endTime = timeSlots[timeSlotIndex + 1] || timeRange.latestEndTime;
+
+        return bookedSlots?.[courtId] && bookedSlots[courtId].some(slot => slot.startTime === startTime && slot.endTime === endTime);
+    };
+
     const isCellSelected = (courtId: number, timeSlotIndex: number) => {
         const startTime = timeSlots[timeSlotIndex];
         const endTime = timeSlots[timeSlotIndex + 1] || timeRange.latestEndTime;
@@ -121,13 +144,27 @@ function BookingSheet({ locationId }: Props) {
     };
 
     const renderRow = (court: ICourt) => {
+        const bookedState = states.find(state => state.id === 'booked');
+        
         return Array.from({ length: cellCount }, (_, timeSlotIndex) => {
             const isSelected = isCellSelected(court.id, timeSlotIndex);
+            const isBooked = isCellBooked(court.id, timeSlotIndex);
+            
             return (
                 <TouchableOpacity
                     key={timeSlotIndex}
-                    style={[styles.cell, { width: cellWidth, height: cellWidth }, isSelected && styles.selectedCell]}
-                    onPress={() => handleCellPress(court.id, timeSlotIndex)}
+                    style={[
+                        styles.cell, 
+                        { 
+                            width: cellWidth, 
+                            height: cellWidth,
+                            ...(isBooked ? { backgroundColor: bookedState?.color } : {}),
+                            borderColor: isBooked ? bookedState?.borderColor : '#ccc',
+                        }, 
+                        isSelected && styles.selectedCell,
+                    ]}
+                    onPress={() => !isBooked && handleCellPress(court.id, timeSlotIndex)}
+                    disabled={isBooked}
                 />
             );
         });
@@ -263,6 +300,7 @@ const styles = StyleSheet.create({
         borderColor: '#4CAF50',
         borderWidth: 2,
     },
+
     registerButton: {
         backgroundColor: '#4CAF50',
         paddingVertical: 12,
