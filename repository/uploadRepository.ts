@@ -7,11 +7,9 @@ interface UploadImageRes extends IResponse {
         url: string;
     }
 };
-const uploadImage = async (file: File) => {
-    const formData = new FormData();
-    formData.append('image', file);
+const uploadImage = async (data: any) => {
 
-    return httpService.post<UploadImageRes>(`${process.env.NEXT_PUBLIC_API_URL}/upload/image`, formData, {
+    return httpService.post<UploadImageRes>(`${process.env.EXPO_PUBLIC_API_URL}/upload/image`, data, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },
@@ -20,8 +18,8 @@ const uploadImage = async (file: File) => {
 
 export const useUploadImageMutation = () => {
     return useMutation({
-        mutationFn: async (file: File) => {
-            const response = await uploadImage(file);
+        mutationFn: async (data: any) => {
+            const response = await uploadImage(data);
             return response.data;
         },
     });

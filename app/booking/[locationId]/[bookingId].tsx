@@ -164,14 +164,14 @@ function PaymentScreen() {
                 const match = /\.(\w+)$/.exec(filename);
                 const type = match ? `image/${match[1]}` : 'image';
                 
-                // Fetch the image
-                const response = await fetch(uri);
-                const blob = await response.blob();
+                const formData = new FormData();
+                formData.append('image', {
+                    uri: uri,
+                    name: filename,
+                    type: type,
+                } as any);
                 
-                // Create a File object
-                const file = new File([blob], filename, { type });
-                
-                uploadImageMutation.mutate(file, {
+                uploadImageMutation.mutate(formData, {
                     onSuccess: (data) => {
                         setPaymentImage(data.data.url);
                     },

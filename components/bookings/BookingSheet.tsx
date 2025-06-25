@@ -11,6 +11,7 @@ import { states } from './CourtStateInfo';
 
 type Props = {
     locationId: number;
+    bookingDate: string;
 };
 
 export type SelectedCell = {
@@ -20,9 +21,9 @@ export type SelectedCell = {
     courtData?: ICourt; // Optional for future use if needed
 };
 
-function BookingSheet({ locationId }: Props) {
+function BookingSheet({ locationId, bookingDate }: Props) {
     const locationQuery = useLocationByIdQuery({ locationId });
-    const bookingsQuery = useBookingsQuery({ locationId, status: ["pending", "confirmed", "completed"] });
+    const bookingsQuery = useBookingsQuery({ locationId, status: ["pending", "confirmed", "completed"], bookingDate });
     const bookedSlots = bookingsQuery.data?.data?.data?.reduce((acc, booking) => {
         booking.slots.forEach(slot => {
             if(!acc[slot.court_id.toString()]) {

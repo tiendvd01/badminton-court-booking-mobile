@@ -10,7 +10,7 @@ import { useBookingStore } from '@/stores/bookingStore';
 
 function BookingScreen() {
     const router = useRouter();
-    const { setSelectedCells, setBookingDate, reset } = useBookingStore();
+    const { setSelectedCells, setBookingDate, reset, bookingDate } = useBookingStore();
 
     const { locationId } = useGlobalSearchParams();
 
@@ -39,7 +39,7 @@ function BookingScreen() {
                         onPress={() => router.push(`/booking/${locationId}/price`)}
                     />
                 </View>
-                <View style={styles.bookingSheetContainer}><BookingSheet locationId={Number(locationId)} /></View>
+                <View style={styles.bookingSheetContainer}><BookingSheet locationId={Number(locationId)} bookingDate={bookingDate} /></View>
             </SafeAreaView>
         </>
     );
