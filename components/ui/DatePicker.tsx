@@ -49,7 +49,6 @@ const DatePicker: React.FC<DatePickerProps> = ({ onDateSelect, initialDate = for
                 <View style={styles.modalContent}>
                     <Calendar
                         current={selectedDate}
-                        minDate={format(new Date(), 'yyyy-MM-dd')}
                         maxDate={format(addDays(new Date(), 30), 'yyyy-MM-dd')}
                         onDayPress={handleDateSelect}
                         markedDates={markedDates}

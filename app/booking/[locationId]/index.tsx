@@ -10,7 +10,7 @@ import { useBookingStore } from '@/stores/bookingStore';
 
 function BookingScreen() {
     const router = useRouter();
-    const { setSelectedCells, setBookingDate, reset, bookingDate } = useBookingStore();
+    const { setBookingDate, reset, bookingDate } = useBookingStore();
 
     const { locationId } = useGlobalSearchParams();
 

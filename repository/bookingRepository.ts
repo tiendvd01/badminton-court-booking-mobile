@@ -16,6 +16,7 @@ interface CreateBookingParams {
     };
     booking_date: string;
     note?: string;
+    customer_id?: number;
 }
 
 export const createBookings = (data: CreateBookingParams) => {
@@ -32,17 +33,19 @@ export const useCreateBookingMutation = () => {
 };
 
 interface GetBookingsParams {
-    locationId: number;
+    locationId?: number;
     customerName?: string;
     bookingDate?: string;
     status?: string[];
+    customerId?: number;
 }
 
 interface GetBookingsQueryKeyParams {
-    locationId: number;
+    locationId?: number;
     customerName?: string;
     bookingDate?: string;
     status?: string[];
+    customerId?: number;
 }
 
 export const getBookings = (params: GetBookingsParams) => {
@@ -54,11 +57,11 @@ export const getBookings = (params: GetBookingsParams) => {
 
 export const BookingsQueryKey = (params: GetBookingsQueryKeyParams) => ['bookings', params];
 
-export const useBookingsQuery = (params: GetBookingsQueryKeyParams) => {
+export const useBookingsQuery = (params: GetBookingsQueryKeyParams, enabled = true) => {
     return useQuery({
         queryKey: BookingsQueryKey(params),
         queryFn: () => getBookings(params),
-        enabled: !!params.locationId,
+        enabled,
     });
 };
 

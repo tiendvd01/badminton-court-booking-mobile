@@ -10,6 +10,7 @@ import { Controller, useForm } from 'react-hook-form';
 import AppButton from '@/components/ui/AppButton';
 import { useCreateBookingMutation } from '@/repository/bookingRepository';
 import { useAsyncStorage } from '@react-native-async-storage/async-storage';
+import { useAuthStore } from '@/stores/authStore';
 
 type FormData = {
     name: string;
@@ -18,18 +19,20 @@ type FormData = {
 };
 
 function ConfirmScreen() {
-    const { selectedCells, bookingDate, setBookingInfo } = useBookingStore();
+    const { user } = useAuthStore();
+    const { selectedCells, bookingDate, setBookingInfo, reset } = useBookingStore();
     const { locationId } = useLocalSearchParams();
     const createBookingMutation = useCreateBookingMutation();
     const locationQuery = useLocationByIdQuery({ locationId: Number(locationId) });
     const location = locationQuery.data?.data?.data;
-    const storage = useAsyncStorage("bookingIds");
-    const customerStorage = useAsyncStorage("customerInfo");
+    const storage = useAsyncStorage('bookingIds');
+    const customerStorage = useAsyncStorage('customerInfo');
 
     const {
         control,
         handleSubmit,
         formState: { errors },
+        setValue,
     } = useForm<FormData>({
         defaultValues: {
             name: '',
@@ -44,51 +47,60 @@ function ConfirmScreen() {
             phone: formData.phone,
             notes: formData.notes,
         });
-        createBookingMutation.mutate({
-            slots: selectedCells.map((item) => ({
-                courtId: item.courtId,
-                startTime: item.startTime,
-                endTime: item.endTime,
-            })),
-            location_id: Number(locationId),
-            customer_info: {
-                name: formData.name,
-                phone_number: formData.phone,
-            },
-            booking_date: bookingDate,
-            note: formData.notes,
-        }, {
-            onSuccess: async (data) => {
-                const bookingIds = JSON.parse(await storage.getItem() || "[]");
-                const newBookingIds = [...bookingIds, data.data.data.id];
-                await storage.setItem(JSON.stringify(newBookingIds));
-
-                const customerInfo = JSON.stringify({
+        createBookingMutation.mutate(
+            {
+                slots: selectedCells.map((item) => ({
+                    courtId: item.courtId,
+                    startTime: item.startTime,
+                    endTime: item.endTime,
+                })),
+                location_id: Number(locationId),
+                customer_info: {
                     name: formData.name,
-                    phone: formData.phone,
-                });
-                await customerStorage.setItem(customerInfo);
-                router.push(`/booking/${locationId}/${data.data.data.id}`);
+                    phone_number: formData.phone,
+                },
+                booking_date: bookingDate,
+                note: formData.notes,
+                customer_id: user?.id,
             },
-            onError: () => {
-                Alert.alert('Lỗi', "Có lỗi xảy ra");
+            {
+                onSuccess: async (data) => {
+                    const bookingIds = JSON.parse((await storage.getItem()) || '[]');
+                    const newBookingIds = [...bookingIds, data.data.data.id];
+                    await storage.setItem(JSON.stringify(newBookingIds));
+
+                    const customerInfo = JSON.stringify({
+                        name: formData.name,
+                        phone: formData.phone,
+                    });
+                    await customerStorage.setItem(customerInfo);
+                    reset();
+                    router.push(`/booking/${locationId}/${data.data.data.id}`);
+                },
+                onError: () => {
+                    Alert.alert('Lỗi', 'Có lỗi xảy ra');
+                },
             },
-        })
-    }; 
-    
-    const phoneRegex = /^(0|\+84)(\s|\.)?((3[2-9])|(5[689])|(7[06-9])|(8[1-9])|(9[0-46-9]))(\d)(\s|\.)?(\d{3})(\s|\.)?(\d{3})$/;
+        );
+    };
+
+    const phoneRegex =
+        /^(0|\+84)(\s|\.)?((3[2-9])|(5[689])|(7[06-9])|(8[1-9])|(9[0-46-9]))(\d)(\s|\.)?(\d{3})(\s|\.)?(\d{3})$/;
 
     useEffect(() => {
         const loadCustomerInfo = async () => {
             try {
-                const value = await customerStorage.getItem();
-                if (value) {
-                    const customerInfo = JSON.parse(value);
-                    if (customerInfo) {
-                        setBookingInfo({
-                            name: customerInfo.name,
-                            phone: customerInfo.phone,
-                        });
+                if (user) {
+                    setValue('name', user.name || '');
+                    setValue('phone', user.phone || '');
+                } else {
+                    const value = await customerStorage.getItem();
+                    if (value) {
+                        const customerInfo = JSON.parse(value);
+                        if (customerInfo) {
+                            setValue('name', customerInfo.name);
+                            setValue('phone', customerInfo.phone);
+                        }
                     }
                 }
             } catch (error) {
@@ -287,19 +299,14 @@ function ConfirmScreen() {
                                 render={({ field: { onChange, onBlur, value } }) => (
                                     <>
                                         <TextInput
-                                            style={[
-                                                styles.input,
-                                                errors.name && styles.inputError,
-                                            ]}
+                                            style={[styles.input, errors.name && styles.inputError]}
                                             placeholder="Nhập tên của bạn"
                                             placeholderTextColor="#999"
                                             onBlur={onBlur}
                                             onChangeText={onChange}
                                             value={value}
                                         />
-                                        {errors.name && (
-                                            <Text style={styles.errorText}>{errors.name.message}</Text>
-                                        )}
+                                        {errors.name && <Text style={styles.errorText}>{errors.name.message}</Text>}
                                     </>
                                 )}
                                 name="name"
@@ -321,10 +328,7 @@ function ConfirmScreen() {
                                     render={({ field: { onChange, onBlur, value } }) => (
                                         <>
                                             <TextInput
-                                                style={[
-                                                    styles.input,
-                                                    errors.phone && styles.inputError,
-                                                ]}
+                                                style={[styles.input, errors.phone && styles.inputError]}
                                                 placeholder="Nhập số điện thoại"
                                                 placeholderTextColor="#999"
                                                 keyboardType="phone-pad"
@@ -379,7 +383,7 @@ function ConfirmScreen() {
                         marginHorizontal: 10,
                         marginTop: 10,
                     }}
-                    variant='primary'
+                    variant="primary"
                 />
             </View>
         </SafeAreaView>
@@ -454,7 +458,7 @@ const styles = StyleSheet.create({
         padding: 12,
         color: '#000000',
         fontSize: 16,
-        width: "100%"
+        width: '100%',
     },
     phoneInput: {
         flex: 1,

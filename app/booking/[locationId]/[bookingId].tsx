@@ -21,6 +21,7 @@ import { useOwnerPaymentsByOwnerIdQuery } from '@/repository/paymentRepository';
 import { useConfirmBookingMutation } from '@/repository/bookingRepository';
 import { useUploadImageMutation } from '@/repository/uploadRepository';
 import { Loader } from 'lucide-react-native';
+import { useBookingStore } from '@/stores/bookingStore';
 
 interface Slot {
     court_id: number;
@@ -36,6 +37,8 @@ function PaymentScreen() {
     const { locationId } = useLocalSearchParams();
     const [timeLeft, setTimeLeft] = useState(0);
     const [paymentImage, setPaymentImage] = useState<string | null>(null);
+
+    const { reset } = useBookingStore();
 
     const { bookingId } = useLocalSearchParams();
     const bookingByIdQuery = useBookingByIdQuery({ bookingId: Number(bookingId) });
@@ -199,6 +202,7 @@ function PaymentScreen() {
             paymentImageUrl: paymentImage,
         }, {
             onSuccess: () => {
+                reset();
                 Alert.alert('Thành công', 'Đã xác nhận thanh toán');
                 router.push(`/history/${bookingId}`);
             },

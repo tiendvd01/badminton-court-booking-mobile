@@ -6,6 +6,7 @@ import { NavigationState, SceneRendererProps, TabView } from 'react-native-tab-v
 import { useState } from 'react';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import BookingHistoryList from '@/components/history/BookingHistoryList';
+import { useQueryClient } from '@tanstack/react-query';
 
 type TabRoute = {
     key: string;
@@ -15,7 +16,8 @@ type TabRoute = {
 
 export default function LoginScreen() {
     const router = useRouter();
-    const { user } = useAuthStore();
+    const { user, logout } = useAuthStore();
+    const queryClient = useQueryClient();
     const [tabIndex, setTabIndex] = useState(0);
     const { width } = useWindowDimensions();
     const routes: TabRoute[] = [
@@ -67,6 +69,11 @@ export default function LoginScreen() {
                 return null;
         }
     };
+    const handleClickLogout = () => {
+        logout(() => {
+            queryClient.invalidateQueries();
+        });
+    };
 
     return (
         <ScrollView contentContainerStyle={{ backgroundColor: '#3F7D58', height: '100%' }}>
@@ -82,8 +89,19 @@ export default function LoginScreen() {
                         paddingTop: 80,
                     }}
                 >
-                    <AppButton variant="primary" title="Đăng nhập" onPress={handleClickLogin} />
-                    <AppButton color="#FFF" title="Đăng ký" onPress={handleClickRegister} backgroundColor="#FFF" />
+                    {!user ? (
+                        <>
+                            <AppButton variant="primary" title="Đăng nhập" onPress={handleClickLogin} />
+                            <AppButton
+                                color="#FFF"
+                                title="Đăng ký"
+                                onPress={handleClickRegister}
+                                backgroundColor="#FFF"
+                            />
+                        </>
+                    ) : (
+                        <AppButton variant="primary" title="Đăng xuất" onPress={handleClickLogout} />
+                    )}
                 </View>
                 <View style={styles.avatarContainer}>
                     <Image style={styles.avatar} source={require('../../assets/images/cat.png')} />
@@ -180,5 +198,5 @@ const styles = StyleSheet.create({
     historyListContainer: {
         paddingVertical: 8,
         paddingHorizontal: 8,
-    }
+    },
 });

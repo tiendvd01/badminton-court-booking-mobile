@@ -23,13 +23,13 @@ export default function TabLayout() {
                     tabBarIcon: ({ color, size }) => <HomeIcon color={color} size={size} />,
                 }}
             />
-            <Tabs.Screen
+            {/* <Tabs.Screen
                 name="map"
                 options={{
                     title: "Bản đồ",
                     tabBarIcon: ({ color, size }) => <MapIcon color={color} size={size} />,
                 }}
-            />
+            /> */}
             <Tabs.Screen
                 name="user"
                 options={{

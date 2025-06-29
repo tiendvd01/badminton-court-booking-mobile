@@ -1,13 +1,14 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { IUser } from '@/types/common';
+import { useQueryClient } from '@tanstack/react-query';
 
 type AuthState = {
   user: IUser | null;
   token: string | null;
   isAuthenticated: boolean | null;
   login: (user: IUser, token: string) => Promise<void>;
-  logout: () => Promise<void>;
+  logout: (callback?: () => void) => Promise<void>;
   initUserFromAsyncStorage: () => Promise<void>;
   setUser: (user: IUser) => Promise<void>;
 };
@@ -23,7 +24,7 @@ export const useAuthStore = create<AuthState>((set) => {
     });
   };
 
-  const logout = async () => {
+  const logout = async (callback?: () => void) => {
     await AsyncStorage.removeItem('user');
     await AsyncStorage.removeItem('token');
     set({
@@ -31,6 +32,7 @@ export const useAuthStore = create<AuthState>((set) => {
       token: null,
       isAuthenticated: false,
     });
+    callback?.();
   };
 
   const initUserFromAsyncStorage = async () => {

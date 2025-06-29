@@ -1,4 +1,8 @@
-import { useCourtsByLocationQuery, useLocationByIdQuery, usePriceTablesByLocationQuery } from '@/repository/courtRepository';
+import {
+    useCourtsByLocationQuery,
+    useLocationByIdQuery,
+    usePriceTablesByLocationQuery,
+} from '@/repository/courtRepository';
 import { ICourt } from '@/types/common';
 import { getTimeRange } from '@/utils/helper';
 import React, { useState, useCallback, useEffect } from 'react';
@@ -14,6 +18,18 @@ type Props = {
     bookingDate: string;
 };
 
+const isPastDate = (dateString: string, timeSlot: string): boolean => {
+    const now = new Date();
+    const [year, month, day] = dateString.split('-').map(Number);
+    const [hours, minutes] = timeSlot.split(':').map(Number);
+    
+    // Create a Date object for the booking time
+    const bookingDateTime = new Date(year, month - 1, day, hours, minutes);
+    
+    // Compare the exact date and time
+    return now > bookingDateTime;
+};
+
 export type SelectedCell = {
     courtId: number;
     startTime: string;
@@ -23,20 +39,23 @@ export type SelectedCell = {
 
 function BookingSheet({ locationId, bookingDate }: Props) {
     const locationQuery = useLocationByIdQuery({ locationId });
-    const bookingsQuery = useBookingsQuery({ locationId, status: ["pending", "confirmed", "completed"], bookingDate });
-    const bookedSlots = bookingsQuery.data?.data?.data?.reduce((acc, booking) => {
-        booking.slots.forEach(slot => {
-            if(!acc[slot.court_id.toString()]) {
-                acc[slot.court_id.toString()] = [];  
-            }
-            acc[slot.court_id.toString()].push({
-                startTime: slot.start_time,
-                endTime: slot.end_time,
-            })
-        })
-        return acc;
-    }, {} as { [key: string]: { startTime: string; endTime: string }[] });
-    
+    const bookingsQuery = useBookingsQuery({ locationId, status: ['pending', 'confirmed', 'completed'], bookingDate });
+    const bookedSlots = bookingsQuery.data?.data?.data?.reduce(
+        (acc, booking) => {
+            booking.slots.forEach((slot) => {
+                if (!acc[slot.court_id.toString()]) {
+                    acc[slot.court_id.toString()] = [];
+                }
+                acc[slot.court_id.toString()].push({
+                    startTime: slot.start_time,
+                    endTime: slot.end_time,
+                });
+            });
+            return acc;
+        },
+        {} as { [key: string]: { startTime: string; endTime: string }[] },
+    );
+
     const priceTableQuery = usePriceTablesByLocationQuery({ locationId });
     const courtsByLocationQuery = useCourtsByLocationQuery({ locationId });
     const courts = courtsByLocationQuery.data?.data?.data || [];
@@ -73,7 +92,11 @@ function BookingSheet({ locationId, bookingDate }: Props) {
 
     const timeRange = getTimeRange(priceTableQuery.data?.data?.data || []);
 
-    const timeSlots = generateTimeSlots(timeRange.earliestStartTime, timeRange.latestEndTime, locationQuery.data?.data?.data?.min_shift_time || 30);
+    const timeSlots = generateTimeSlots(
+        timeRange.earliestStartTime,
+        timeRange.latestEndTime,
+        locationQuery.data?.data?.data?.min_shift_time || 30,
+    );
 
     const cellCount = timeSlots.length - 1;
 
@@ -84,12 +107,10 @@ function BookingSheet({ locationId, bookingDate }: Props) {
 
             // Get current cells from the store
             const currentCells = useBookingStore.getState().selectedCells;
-            
+
             const existingIndex = currentCells.findIndex(
-                (cell: SelectedCell) => 
-                    cell.courtId === courtId && 
-                    cell.startTime === startTime && 
-                    cell.endTime === endTime
+                (cell: SelectedCell) =>
+                    cell.courtId === courtId && cell.startTime === startTime && cell.endTime === endTime,
             );
 
             if (existingIndex >= 0) {
@@ -98,7 +119,7 @@ function BookingSheet({ locationId, bookingDate }: Props) {
                 useBookingStore.getState().setSelectedCells(newCells);
             } else {
                 // Add new cell if it doesn't exist
-                const courtData = courts.find(court => court.id === courtId);
+                const courtData = courts.find((court) => court.id === courtId);
                 const newCell: SelectedCell = {
                     courtId,
                     startTime,
@@ -132,7 +153,10 @@ function BookingSheet({ locationId, bookingDate }: Props) {
         const startTime = timeSlots[timeSlotIndex];
         const endTime = timeSlots[timeSlotIndex + 1] || timeRange.latestEndTime;
 
-        return bookedSlots?.[courtId] && bookedSlots[courtId].some(slot => slot.startTime === startTime && slot.endTime === endTime);
+        return (
+            bookedSlots?.[courtId] &&
+            bookedSlots[courtId].some((slot) => slot.startTime === startTime && slot.endTime === endTime)
+        );
     };
 
     const isCellSelected = (courtId: number, timeSlotIndex: number) => {
@@ -145,27 +169,47 @@ function BookingSheet({ locationId, bookingDate }: Props) {
     };
 
     const renderRow = (court: ICourt) => {
-        const bookedState = states.find(state => state.id === 'booked');
-        
+        const bookedState = states.find((state) => state.id === 'booked');
+
         return Array.from({ length: cellCount }, (_, timeSlotIndex) => {
             const isSelected = isCellSelected(court.id, timeSlotIndex);
             const isBooked = isCellBooked(court.id, timeSlotIndex);
-            
+            const isDateInPast = isPastDate(bookingDate, timeSlots[timeSlotIndex]);
+            const isDisabled = isDateInPast || isBooked;
+
             return (
                 <TouchableOpacity
                     key={timeSlotIndex}
                     style={[
-                        styles.cell, 
-                        { 
-                            width: cellWidth, 
+                        styles.cell,
+                        {
+                            width: cellWidth,
                             height: cellWidth,
-                            ...(isBooked ? { backgroundColor: bookedState?.color } : {}),
-                            borderColor: isBooked ? bookedState?.borderColor : '#ccc',
-                        }, 
+                            ...(isBooked
+                                ? {
+                                      backgroundColor: bookedState?.color,
+                                      borderColor: bookedState?.borderColor,
+                                  }
+                                : isDateInPast
+                                  ? {
+                                        backgroundColor: bookedState?.color,
+                                        borderColor: bookedState?.borderColor,
+                                    }
+                                  : {
+                                        backgroundColor: '#ffffff',
+                                        borderColor: '#e0e0e0',
+                                    }),
+                            opacity: isDateInPast ? 0.7 : 1,
+                        },
                         isSelected && styles.selectedCell,
+                        isDisabled &&
+                            !isBooked && {
+                                backgroundColor: '#9E9E9E',
+                                borderColor: '#9E9E9E',
+                            },
                     ]}
-                    onPress={() => !isBooked && handleCellPress(court.id, timeSlotIndex)}
-                    disabled={isBooked}
+                    onPress={() => !isDisabled && handleCellPress(court.id, timeSlotIndex)}
+                    disabled={isDisabled}
                 />
             );
         });
@@ -191,10 +235,14 @@ function BookingSheet({ locationId, bookingDate }: Props) {
         return (
             <View style={styles.courtList}>
                 {courts.map((court, index) => (
-                    <View onLayout={(e) => {
-                        const width = e.nativeEvent.layout.width;
-                        setCourtCellWidth(width);
-                    }} key={court.id} style={[styles.courtCell, { height: cellWidth, minWidth: courtCellWidth }]}>
+                    <View
+                        onLayout={(e) => {
+                            const width = e.nativeEvent.layout.width;
+                            setCourtCellWidth(width);
+                        }}
+                        key={court.id}
+                        style={[styles.courtCell, { height: cellWidth, minWidth: courtCellWidth }]}
+                    >
                         <Text>{court.name || index + 1}</Text>
                     </View>
                 ))}
@@ -228,9 +276,15 @@ function BookingSheet({ locationId, bookingDate }: Props) {
                 <View style={styles.courtContainer}>{renderCourtList()}</View>
             </View>
             <View style={styles.registerButtonContainer}>
-                <AppButton title="Đăng ký" onPress={handleRegister} backgroundColor="#EF9651" variant="primary" styles={{
-                    height: 50,
-                }} />
+                <AppButton
+                    title="Đăng ký"
+                    onPress={handleRegister}
+                    backgroundColor="#EF9651"
+                    variant="primary"
+                    styles={{
+                        height: 50,
+                    }}
+                />
             </View>
         </>
     );
