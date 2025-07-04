@@ -1,4 +1,4 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -10,6 +10,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import FrameGlobal from '@/components/FrameGlobal';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -43,21 +44,23 @@ export default function RootLayout() {
             <BottomSheetModalProvider>
                 <QueryClientProvider client={queryClient}>
                     <ThemeProvider value={DefaultTheme}>
-                        <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
-                            <Stack
-                                screenOptions={{
-                                    contentStyle: { backgroundColor: '#FFFFFF', flex: 1 },
-                                }}
-                            >
-                                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                                <Stack.Screen name="login" options={{ headerShown: false }} />
-                                <Stack.Screen name="register" options={{ headerShown: false }} />
-                                <Stack.Screen name="booking" options={{ headerShown: false }} />
-                                <Stack.Screen name="history" options={{ headerShown: false }} />
-                                <Stack.Screen name="+not-found" />
-                            </Stack>
-                            <StatusBar style="auto" />
-                        </View>
+                        <FrameGlobal>
+                            <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+                                <Stack
+                                    screenOptions={{
+                                        contentStyle: { backgroundColor: '#FFFFFF', flex: 1 },
+                                    }}
+                                >
+                                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                                    <Stack.Screen name="login" options={{ headerShown: false }} />
+                                    <Stack.Screen name="register" options={{ headerShown: false }} />
+                                    <Stack.Screen name="booking" options={{ headerShown: false }} />
+                                    <Stack.Screen name="history" options={{ headerShown: false }} />
+                                    <Stack.Screen name="+not-found" />
+                                </Stack>
+                                <StatusBar style="auto" />
+                            </View>
+                        </FrameGlobal>
                     </ThemeProvider>
                 </QueryClientProvider>
             </BottomSheetModalProvider>
